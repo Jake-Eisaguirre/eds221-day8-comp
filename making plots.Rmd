@@ -172,3 +172,87 @@ ggplot(liz_count, aes(x = date, y = n)) +
 
 ```
 
+```{r}
+
+
+ggplot(liz, aes(x = total_length, y = weight, color = weight)) +
+  
+  geom_point() +
+  
+  theme_classic() 
+  
+
+
+ggplot(liz, aes(x = total_length, y = weight, color = weight)) +
+  
+  geom_point() +
+  
+  theme_classic() +
+  
+  scale_color_gradient(low = "red", high = "blue")
+
+
+
+ggplot(liz, aes(x = total_length, y = weight, color = weight)) +
+  
+  geom_point() +
+  
+  theme_classic() +
+  
+  scale_color_gradientn(colors = c("orange", "red", "black", "blue"))
+
+
+
+ggplot(liz, aes(x = total_length, y = weight, color = weight)) +
+  
+  geom_point() +
+  
+  theme_classic() +
+  
+  scale_color_stepsn(colors = c("green", "blue", "purple"),
+                     breaks = c(0, 20, 40, 50))
+
+```
+### update a color scheme using a palette in paletteer
+
+make a horizontal box plot with common on the y and total length on x with color changing based on common name
+```{r}
+
+lizards_fct <- liz %>% 
+  
+  mutate(common_name = fct_reorder(common_name, total_length, .fun = median))
+
+ggplot(lizards_fct, aes(x = total_length, y = common_name)) +
+  
+  geom_boxplot(aes(fill = common_name), show.legend = F) +
+  
+  theme_classic() +
+  
+  scale_fill_paletteer_d(palette = "palettetown::slugma")
+  
+  
+
+```
+
+```{r}
+
+ggplot(liz, aes(x = total_length, y = weight)) +
+  
+  geom_point() +
+  
+  theme(
+    panel.background = element_rect(fill = "yellow", 
+                                    color = "purple",
+                                    size = 10),
+    
+    panel.grid.major.x = element_line(color = "red"),
+    panel.grid.major = element_line(color = "blue"),
+    panel.grid.minor.y = element_line(color = "orange"),
+    plot.background = element_rect(fill = "cyan4"),
+    axis.text.x = element_text(color = "orange"),
+    axis.title = element_text(color = "pink", size = 30)
+  )
+  
+
+```
+
