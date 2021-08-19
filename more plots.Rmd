@@ -1,0 +1,202 @@
+---
+title: "Untitled"
+author: "Jake Eisaguirre"
+date: "8/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(lubridate)
+```
+
+```{r}
+
+liz <-  read_csv(here("data_tidy", "lizards.csv"))
+
+```
+
+## ggrepel
+
+make a subset from lizards, called ww_liz, that only contains observatoins fo wwtail liz from the site "sand"
+```{r}
+
+ww_liz <- liz %>% 
+  
+  filter(common_name == "western whiptail", site == "sand")
+
+ggplot(ww_liz, aes(x = total_length, y = weight)) +
+  
+  geom_point() +
+  
+  theme_classic() +
+  
+  geom_text_repel(aes(label = toe_num), size = 3, max.overlaps = 20)
+
+```
+create a scatter plot of gdp per cap (x) and lifeexp (y), labeled by country name
+```{r}
+
+data <- gapminder %>% 
+  
+  filter(continent == "Europe", year == 1952)
+
+ggplot(data, aes(x = gdpPercap, y = lifeExp)) +
+  
+  geom_point() +
+  
+  geom_text_repel(aes(label = country), size =  3) +
+  
+  theme_classic()
+  
+  
+  
+
+
+
+```
+
+## gghighlight
+
+```{r}
+
+p <- ggplot(liz, aes(x = total_length, y = weight)) +
+  geom_point()
+
+p + gghighlight(toe_num == 250, label_key = toe_num)
+
+
+```
+
+```{r}
+
+q <- ggplot(liz, aes(x = total_length, y = weight)) +
+  
+  geom_line(aes(color = common_name)) +
+  
+  gghighlight(max(weight) > 30)
+
+q
+
+```
+
+## patchwork for compound figures
+
+```{r}
+
+p | q
+
+(p | q) / q & theme_classic()
+
+```
+
+## a few new graph types
+
+### Marginal plots
+
+```{r}
+
+whiptails <- liz %>% 
+  
+  filter(common_name == "western whiptail") %>% 
+  
+  drop_na(total_length, weight)
+
+ggplot(data = whiptails, aes(x = total_length, y = weight)) +
+  
+  geom_point() + 
+  
+  geom_rug()
+
+```
+
+marginal plot with box plots
+
+```{r}
+
+j <- ggplot(data = whiptails, aes(x = total_length, y = weight)) +
+  
+  geom_point(aes(color = sex), size = 2) + 
+  
+  scale_color_manual(values = c("cyan4", "black", "goldenrod"),
+                     name = "Sex:",
+                     labels = c("female", "juvenile", "male")) +
+ 
+   theme_minimal() +
+  
+  theme(legend.position = "bottom")
+
+ggMarginal(j, type = "boxplot", groupColour = T)
+
+```
+
+### Beesarm plot
+
+```{r}
+
+ggplot(whiptails, aes(x = sex, y = weight)) +
+  
+  geom_beeswarm() +
+  
+  geom_violin(fill = NA) +
+  
+  geom_boxplot(fill = NA)
+
+```
+
+### A heat map with geom_tile()
+
+make a new data  fram called lizard_counts, starting from lizards, with date converted to class date, then count by year and common name the number of lizards observed
+```{r}
+
+lizard_counts <- liz %>% 
+  
+  mutate(date = mdy(date)) %>% 
+  
+  mutate(year = year(date)) %>% 
+  
+  count(year, common_name) %>% 
+  
+  rename(count = n)
+
+```
+
+```{r}
+
+ggplot(data = lizard_counts, aes(x = year, y = common_name)) +
+  
+  theme_classic() +
+  
+  geom_tile(aes(fill = count)) +
+  
+  geom_text(aes(label = count), color = "white", size = 3) +
+  
+  scale_fill_gradientn(colors = c("navy", "red", "orange")) + 
+  
+  scale_fill_viridis_c()
+
+```
+### make a map!
+```{r}
+
+jornada_veg <- read_sf(here("data_raw", "spatial_vegetation", "doc.kml")) %>% 
+  
+  select(Name) %>% 
+  
+  clean_names()
+
+ggplot(data = jornada_veg) +
+  
+  geom_sf(aes(fill = name), color = NA) +
+  
+  scale_fill_viridis_d() +
+  
+  theme_minimal() +
+  
+  labs(x =  "Longitude",
+       y = "Latitude",
+       fill = "Dominant vegetation:")
+
+```
+
